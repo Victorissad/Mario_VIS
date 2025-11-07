@@ -56,12 +56,18 @@
                     <hr>
 
                     <div class="d-flex gap-2">
-                        <a href="#" class="btn btn-warning">
+                        <a href="{{ route('films.edit', $film['filmId'] ?? $film['id']) }}" class="btn btn-warning">
                             <i class="bi bi-pencil"></i> Modifier
                         </a>
-                        <button class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce film ?')">
-                            <i class="bi bi-trash"></i> Supprimer
-                        </button>
+                        <form method="POST"
+                              action="{{ route('films.destroy', $film['filmId'] ?? $film['id']) }}"
+                              style="display:inline-block;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce film ?')">
+                                <i class="bi bi-trash"></i> Supprimer
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
