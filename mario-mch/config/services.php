@@ -15,11 +15,11 @@ return [
     */
 
     'postmark' => [
-        'token' => env('POSTMARK_TOKEN'),
+        'key' => env('POSTMARK_API_KEY'),
     ],
 
     'resend' => [
-        'key' => env('RESEND_KEY'),
+        'key' => env('RESEND_API_KEY'),
     ],
 
     'ses' => [
@@ -34,10 +34,9 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-/** Service pour API Toad */
+
     'toad' => [
-    'url' => env('TOAD_API_URL').':'.env('TOAD_API_PORT'),
-    'token' => env('TOAD_API_TOKEN'),
+        'url' => env('TOAD_API_URL', 'http://127.0.0.1:8180'),
     ],
 
 ];

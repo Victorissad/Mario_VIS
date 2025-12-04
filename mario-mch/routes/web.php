@@ -1,24 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\FilmController;
+use App\Http\Controllers\ToadController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-// Routes films protégées par authentification
-Route::middleware('auth')->group(function () {
-    Route::get('/films', [FilmController::class, 'index'])->name('films.index');
-    Route::get('/films/create', [FilmController::class, 'create'])->name('films.create');
-    Route::post('/films', [FilmController::class, 'store'])->name('films.store');
-    Route::get('/films/{id}', [FilmController::class, 'show'])->name('films.show');
-    Route::get('/films/{id}/edit', [FilmController::class, 'edit'])->name('films.edit');
-    Route::put('/films/{id}', [FilmController::class, 'update'])->name('films.update');
-    Route::delete('/films/{id}', [FilmController::class, 'destroy'])->name('films.destroy');
-});
+// Routes pour afficher les données depuis l'API Toad
+Route::get('/films', [ToadController::class, 'getFilms']);
+Route::get('/films/{id}', [ToadController::class, 'getFilmDetail']);
+Route::get('/inventories', [ToadController::class, 'getInventories']);
+Route::get('/inventories/{id}', [ToadController::class, 'getInventoryDetail']);
+Route::get('/stores', [ToadController::class, 'getStores']);
+Route::get('/stores/{id}', [ToadController::class, 'getStoreDetail']);
