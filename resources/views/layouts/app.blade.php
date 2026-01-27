@@ -14,7 +14,7 @@
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
 
     <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <div id="app">
@@ -39,6 +39,16 @@
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('films.*') ? 'active' : '' }}" href="{{ route('films.index') }}">
                                     Gestion du catalogue de films
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('inventories.*') ? 'active' : '' }}" href="{{ route('inventories.index') }}">
+                                    Gestion de l'inventaire
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('stores.*') ? 'active' : '' }}" href="{{ route('stores.index') }}">
+                                    Magasins
                                 </a>
                             </li>
                         @endauth

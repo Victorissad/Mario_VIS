@@ -11,24 +11,17 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
-    protected $table = 'staff'; // Table Staff de la BDD Peach
-    protected $primaryKey = 'staff_id'; // Clé primaire de la table Staff   
+
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
-        'first_name', 'last_name', 'email', 'password', // Adaptez aux colonnes de Staff
+        'name',
+        'email',
+        'password',
     ];
-
-    /**
-     * protected $fillable = [
-     *   'name',
-     *  'email',
-     *   'password',
-    *];
-    */
 
     /**
      * The attributes that should be hidden for serialization.
