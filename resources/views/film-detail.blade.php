@@ -75,30 +75,10 @@
                             </div>
                         </div>
 
-                        <h6 class="text-center mt-4 mb-3">Tarification</h6>
-
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
                                 <span class="text-muted"><i class="bi bi-calendar-week"></i> Durée location</span>
                                 <strong>{{ $film['rentalDuration'] ?? '-' }} jours</strong>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-                                <span class="text-muted"><i class="bi bi-currency-euro"></i> Tarif location</span>
-                                @if(isset($film['rentalRate']))
-                                    <span class="text-success fw-bold">{{ number_format($film['rentalRate'], 2) }} €</span>
-                                @else
-                                    <span>-</span>
-                                @endif
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center pb-2">
-                                <span class="text-muted"><i class="bi bi-box-seam"></i> Coût remplacement</span>
-                                @if(isset($film['replacementCost']))
-                                    <span class="text-danger fw-bold">{{ number_format($film['replacementCost'], 2) }} €</span>
-                                @else
-                                    <span>-</span>
-                                @endif
                             </div>
                         </div>
                     </div>

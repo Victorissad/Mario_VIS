@@ -63,6 +63,11 @@
                             <i class="bi bi-shop"></i> Magasins
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('customers*') ? 'active' : '' }}" href="/customers">
+                            <i class="bi bi-people"></i> Clients
+                        </a>
+                    </li>
                     <li class="nav-item ms-2">
                         <form method="POST" action="/logout" class="d-inline">
                             @csrf

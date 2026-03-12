@@ -97,16 +97,8 @@
                                 <div class="col-md-6">
                                     <ul class="list-unstyled">
                                         <li class="mb-2">
-                                            <strong><i class="bi bi-currency-euro"></i> Tarif location :</strong>
-                                            <span class="text-success fw-bold">{{ isset($film['rentalRate']) ? number_format($film['rentalRate'], 2) : '-' }} €</span>
-                                        </li>
-                                        <li class="mb-2">
                                             <strong><i class="bi bi-calendar-week"></i> Durée location :</strong>
                                             {{ $film['rentalDuration'] ?? '-' }} jours
-                                        </li>
-                                        <li class="mb-2">
-                                            <strong><i class="bi bi-box-seam"></i> Coût remplacement :</strong>
-                                            <span class="text-danger fw-bold">{{ isset($film['replacementCost']) ? number_format($film['replacementCost'], 2) : '-' }} €</span>
                                         </li>
                                     </ul>
                                 </div>

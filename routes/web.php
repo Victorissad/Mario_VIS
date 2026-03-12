@@ -15,10 +15,29 @@ Route::post('/logout', [LoginController::class, 'logout']);
 
 // Routes protégées (nécessitent d'être connecté)
 Route::middleware(\App\Http\Middleware\CheckLogin::class)->group(function () {
-    Route::get('/films', [ToadController::class, 'getFilms']);
-    Route::get('/films/{id}', [ToadController::class, 'getFilmDetail']);
-    Route::get('/inventories', [ToadController::class, 'getInventories']);
-    Route::get('/inventories/{id}', [ToadController::class, 'getInventoryDetail']);
-    Route::get('/stores', [ToadController::class, 'getStores']);
-    Route::get('/stores/{id}', [ToadController::class, 'getStoreDetail']);
+
+    // Films (create avant {id} pour éviter le conflit de route)
+    Route::get('/films/create',    [ToadController::class, 'showCreateFilm']);
+    Route::post('/films',          [ToadController::class, 'createFilm']);
+    Route::get('/films',           [ToadController::class, 'getFilms']);
+    Route::get('/films/{id}/edit', [ToadController::class, 'showEditFilm']);
+    Route::put('/films/{id}',      [ToadController::class, 'updateFilm']);
+    Route::delete('/films/{id}',   [ToadController::class, 'deleteFilm']);
+    Route::get('/films/{id}',      [ToadController::class, 'getFilmDetail']);
+
+    // Inventaires / Stock
+    Route::post('/inventories',          [ToadController::class, 'createInventory']);
+    Route::get('/inventories',           [ToadController::class, 'getInventories']);
+    Route::delete('/inventories/{id}',   [ToadController::class, 'deleteInventory']);
+    Route::get('/inventories/{id}',      [ToadController::class, 'getInventoryDetail']);
+
+    // Magasins
+    Route::get('/stores',     [ToadController::class, 'getStores']);
+    Route::get('/stores/{id}',[ToadController::class, 'getStoreDetail']);
+
+    // Clients
+    Route::get('/customers',           [ToadController::class, 'getCustomers']);
+    Route::get('/customers/{id}/edit', [ToadController::class, 'showEditCustomer']);
+    Route::put('/customers/{id}',      [ToadController::class, 'updateCustomer']);
+    Route::delete('/customers/{id}',   [ToadController::class, 'deleteCustomer']);
 });
