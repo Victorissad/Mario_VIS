@@ -7,16 +7,22 @@ use Illuminate\Support\Facades\Http;
 class ToadController extends Controller
 {
     private string $apiUrl;
+    private string $jwtToken;
 
     public function __construct()
     {
         $this->apiUrl = config('services.toad.url');
+        $this->jwtToken = config('services.toad.token');
+    }
+
+    private function apiGet(string $endpoint)
+    {
+        return Http::withToken($this->jwtToken)->get($this->apiUrl . $endpoint);
     }
 
     public function getFilms()
     {
-        // On fait un GET simple sans token
-        $response = Http::get($this->apiUrl . '/films');
+        $response = $this->apiGet('/films');
 
         if ($response->successful()) {
             $films = $response->json();
@@ -32,8 +38,7 @@ class ToadController extends Controller
 
     public function getInventories()
     {
-        // Récupère tous les inventaires depuis l'API
-        $response = Http::get($this->apiUrl . '/inventories');
+        $response = $this->apiGet('/inventories');
 
         if ($response->successful()) {
             $inventories = $response->json();
@@ -49,8 +54,7 @@ class ToadController extends Controller
 
     public function getStores()
     {
-        // Récupère tous les magasins depuis l'API
-        $response = Http::get($this->apiUrl . '/stores');
+        $response = $this->apiGet('/stores');
 
         if ($response->successful()) {
             $stores = $response->json();
@@ -66,8 +70,7 @@ class ToadController extends Controller
 
     public function getFilmDetail($id)
     {
-        // Récupère le détail d'un film depuis l'API
-        $response = Http::get($this->apiUrl . '/films/' . $id);
+        $response = $this->apiGet('/films/' . $id);
 
         if ($response->successful()) {
             $film = $response->json();
@@ -83,25 +86,22 @@ class ToadController extends Controller
 
     public function getInventoryDetail($id)
     {
-        // Récupère le détail d'un inventaire depuis l'API
-        $inventoryResponse = Http::get($this->apiUrl . '/inventories/' . $id);
+        $inventoryResponse = $this->apiGet('/inventories/' . $id);
 
         if ($inventoryResponse->successful()) {
             $inventory = $inventoryResponse->json();
 
-            // Récupère aussi les infos du film associé
             $film = null;
             if (isset($inventory['filmId'])) {
-                $filmResponse = Http::get($this->apiUrl . '/films/' . $inventory['filmId']);
+                $filmResponse = $this->apiGet('/films/' . $inventory['filmId']);
                 if ($filmResponse->successful()) {
                     $film = $filmResponse->json();
                 }
             }
 
-            // Récupère aussi les infos du magasin associé
             $store = null;
             if (isset($inventory['storeId'])) {
-                $storeResponse = Http::get($this->apiUrl . '/stores/' . $inventory['storeId']);
+                $storeResponse = $this->apiGet('/stores/' . $inventory['storeId']);
                 if ($storeResponse->successful()) {
                     $store = $storeResponse->json();
                 }
@@ -123,18 +123,15 @@ class ToadController extends Controller
 
     public function getStoreDetail($id)
     {
-        // Récupère le détail d'un magasin depuis l'API
-        $storeResponse = Http::get($this->apiUrl . '/stores/' . $id);
+        $storeResponse = $this->apiGet('/stores/' . $id);
 
         if ($storeResponse->successful()) {
             $store = $storeResponse->json();
 
-            // Récupère les inventaires de ce magasin
-            $inventoriesResponse = Http::get($this->apiUrl . '/inventories');
+            $inventoriesResponse = $this->apiGet('/inventories');
             $inventories = [];
             if ($inventoriesResponse->successful()) {
                 $allInventories = $inventoriesResponse->json();
-                // Filtre pour garder seulement les inventaires de ce magasin
                 $inventories = array_filter($allInventories, function($inv) use ($id) {
                     return isset($inv['storeId']) && $inv['storeId'] == $id;
                 });

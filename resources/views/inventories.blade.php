@@ -1,6 +1,6 @@
 @extends('layouts.dvd-layout')
 
-@section('title', 'Gestion de l\'inventaire - DVD Rental')
+@section('title', 'Gestion de l\'inventaire - RFTG')
 
 @section('content')
 <div class="row mb-4">

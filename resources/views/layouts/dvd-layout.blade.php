@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'DVD Rental - Sakila')</title>
+    <title>@yield('title', 'Admin - RFTG')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
@@ -40,7 +40,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">
-                <i class="bi bi-film"></i> DVD Rental - Sakila
+                <i class="bi bi-film"></i> Admin - RFTG
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,6 +63,14 @@
                             <i class="bi bi-shop"></i> Magasins
                         </a>
                     </li>
+                    <li class="nav-item ms-2">
+                        <form method="POST" action="/logout" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-light btn-sm">
+                                <i class="bi bi-box-arrow-right"></i> Déconnexion
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -77,7 +85,7 @@
     <footer class="bg-dark text-white text-center py-3 mt-5">
         <div class="container">
             <small>
-                <i class="bi bi-database"></i> DVD Rental System - Sakila Database
+                <i class="bi bi-database"></i>Admin - RFTG
                 <span class="mx-2">|</span>
                 <i class="bi bi-code-slash"></i> Laravel + Spring Boot
             </small>
