@@ -16,24 +16,30 @@ class ToadController extends Controller
         $this->jwtToken = config('services.toad.token');
     }
 
+    private function token(): string
+    {
+        $userData = session('toad_user');
+        return $userData['token'] ?? $this->jwtToken;
+    }
+
     private function apiGet(string $endpoint)
     {
-        return Http::withToken($this->jwtToken)->get($this->apiUrl . $endpoint);
+        return Http::withToken($this->token())->get($this->apiUrl . $endpoint);
     }
 
     private function apiPost(string $endpoint, array $data)
     {
-        return Http::withToken($this->jwtToken)->post($this->apiUrl . $endpoint, $data);
+        return Http::withToken($this->token())->post($this->apiUrl . $endpoint, $data);
     }
 
     private function apiPut(string $endpoint, array $data)
     {
-        return Http::withToken($this->jwtToken)->put($this->apiUrl . $endpoint, $data);
+        return Http::withToken($this->token())->put($this->apiUrl . $endpoint, $data);
     }
 
     private function apiDelete(string $endpoint)
     {
-        return Http::withToken($this->jwtToken)->delete($this->apiUrl . $endpoint);
+        return Http::withToken($this->token())->delete($this->apiUrl . $endpoint);
     }
 
     // ─── FILMS ───────────────────────────────────────────────────────────────
@@ -70,9 +76,11 @@ class ToadController extends Controller
             'description'        => $request->description,
             'releaseYear'        => $request->releaseYear ? (int) $request->releaseYear : null,
             'rentalDuration'     => (int) $request->rentalDuration,
+            'rentalRate'         => $request->rentalRate ? (float) $request->rentalRate : 4.99,
             'length'             => $request->length ? (int) $request->length : null,
+            'replacementCost'    => $request->replacementCost ? (float) $request->replacementCost : 19.99,
             'rating'             => $request->rating,
-            'specialFeatures'    => $request->specialFeatures,
+            'specialFeatures'    => $request->specialFeatures ? implode(',', $request->specialFeatures) : null,
             'originalLanguageId' => $request->originalLanguageId ? (int) $request->originalLanguageId : null,
         ];
 
@@ -108,9 +116,11 @@ class ToadController extends Controller
             'description'        => $request->description,
             'releaseYear'        => $request->releaseYear ? (int) $request->releaseYear : null,
             'rentalDuration'     => (int) $request->rentalDuration,
+            'rentalRate'         => $request->rentalRate ? (float) $request->rentalRate : 4.99,
             'length'             => $request->length ? (int) $request->length : null,
+            'replacementCost'    => $request->replacementCost ? (float) $request->replacementCost : 19.99,
             'rating'            => $request->rating,
-            'specialFeatures'   => $request->specialFeatures,
+            'specialFeatures'   => $request->specialFeatures ? implode(',', $request->specialFeatures) : null,
             'originalLanguageId'=> $request->originalLanguageId ? (int) $request->originalLanguageId : null,
         ];
 
@@ -223,117 +233,4 @@ class ToadController extends Controller
         return redirect('/inventories')->with('success', 'Exemplaire supprimé du stock.');
     }
 
-    // ─── MAGASINS ────────────────────────────────────────────────────────────
-
-    public function getStores()
-    {
-        $response = $this->apiGet('/stores');
-
-        if ($response->successful()) {
-            $stores = $response->json();
-            return view('stores', ['stores' => $stores]);
-        } else {
-            return response()->json([
-                'error'  => 'Impossible de récupérer les magasins',
-                'status' => $response->status(),
-                'body'   => $response->body(),
-            ], 500);
-        }
-    }
-
-    public function getStoreDetail($id)
-    {
-        $storeResponse = $this->apiGet('/stores/' . $id);
-
-        if ($storeResponse->successful()) {
-            $store = $storeResponse->json();
-
-            $inventoriesResponse = $this->apiGet('/inventories');
-            $inventories = [];
-            if ($inventoriesResponse->successful()) {
-                $allInventories = $inventoriesResponse->json();
-                $inventories = array_filter($allInventories, function ($inv) use ($id) {
-                    return isset($inv['storeId']) && $inv['storeId'] == $id;
-                });
-            }
-
-            return view('store-detail', [
-                'store'       => $store,
-                'inventories' => $inventories,
-            ]);
-        }
-
-        return response()->json([
-            'error'  => 'Magasin non trouvé',
-            'status' => $storeResponse->status(),
-            'body'   => $storeResponse->body(),
-        ], 404);
-    }
-
-    // ─── CLIENTS ─────────────────────────────────────────────────────────────
-
-    public function getCustomers()
-    {
-        $response = $this->apiGet('/customers');
-
-        if ($response->successful()) {
-            return view('customers', ['customers' => $response->json()]);
-        }
-
-        return response()->json([
-            'error'  => 'Impossible de récupérer les clients',
-            'status' => $response->status(),
-            'body'   => $response->body(),
-        ], 500);
-    }
-
-    public function showEditCustomer($id)
-    {
-        $response = $this->apiGet('/customers/' . $id);
-
-        if ($response->successful()) {
-            return view('customer-edit', ['customer' => $response->json()]);
-        }
-
-        return redirect('/customers')->withErrors(['api' => 'Client introuvable.']);
-    }
-
-    public function updateCustomer(Request $request, $id)
-    {
-        $request->validate([
-            'firstName' => 'required|string|max:100',
-            'lastName'  => 'required|string|max=100',
-            'email'     => 'required|email',
-        ]);
-
-        $currentResponse = $this->apiGet('/customers/' . $id);
-        if (!$currentResponse->successful()) {
-            return back()->withErrors(['api' => 'Client introuvable.']);
-        }
-        $current = $currentResponse->json();
-
-        $data = [
-            'storeId'   => $current['storeId'],
-            'firstName' => $request->firstName,
-            'lastName'  => $request->lastName,
-            'email'     => $request->email,
-            'password'  => $current['password'],
-            'addressId' => $current['addressId'],
-            'active'    => $request->has('active') ? true : false,
-        ];
-
-        $response = $this->apiPut('/customers/' . $id, $data);
-
-        if ($response->successful()) {
-            return redirect('/customers')->with('success', 'Client modifié avec succès.');
-        }
-
-        return back()->withInput()->withErrors(['api' => 'Erreur lors de la modification. (' . $response->status() . ')']);
-    }
-
-    public function deleteCustomer($id)
-    {
-        $this->apiDelete('/customers/' . $id);
-        return redirect('/customers')->with('success', 'Client supprimé.');
-    }
 }

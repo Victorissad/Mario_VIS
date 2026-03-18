@@ -61,11 +61,23 @@
                            value="{{ old('length', $film['length'] ?? '') }}" min="1">
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <div class="col-md-3 mb-3">
                     <label class="form-label fw-bold">Durée location (jours) <span class="text-danger">*</span></label>
                     <input type="number" name="rentalDuration" class="form-control @error('rentalDuration') is-invalid @enderror"
                            value="{{ old('rentalDuration', $film['rentalDuration'] ?? '') }}" min="1" required>
                     @error('rentalDuration') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Tarif location (€)</label>
+                    <input type="number" step="0.01" name="rentalRate" class="form-control"
+                           value="{{ old('rentalRate', $film['rentalRate'] ?? '4.99') }}" min="0">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Coût remplacement (€)</label>
+                    <input type="number" step="0.01" name="replacementCost" class="form-control"
+                           value="{{ old('replacementCost', $film['replacementCost'] ?? '19.99') }}" min="0">
                 </div>
             </div>
 
@@ -82,9 +94,19 @@
 
                 <div class="col-md-8 mb-3">
                     <label class="form-label fw-bold">Caractéristiques spéciales</label>
-                    <input type="text" name="specialFeatures" class="form-control"
-                           value="{{ old('specialFeatures', $film['specialFeatures'] ?? '') }}"
-                           placeholder="ex: Trailers, Commentaries...">
+                    @php
+                        $currentFeatures = old('specialFeatures', $film['specialFeatures'] ?? '');
+                        $currentFeatures = is_array($currentFeatures) ? $currentFeatures : explode(',', $currentFeatures);
+                        $currentFeatures = array_map('trim', $currentFeatures);
+                    @endphp
+                    @foreach(['Trailers', 'Commentaries', 'Deleted Scenes', 'Behind the Scenes'] as $feature)
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="specialFeatures[]"
+                                   value="{{ $feature }}" id="sf_{{ $loop->index }}"
+                                   {{ in_array($feature, $currentFeatures) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="sf_{{ $loop->index }}">{{ $feature }}</label>
+                        </div>
+                    @endforeach
                 </div>
             </div>
 

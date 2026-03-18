@@ -18,7 +18,7 @@ class LoginController extends Controller
 
     public function showLogin()
     {
-        if (session('customerId')) {
+        if (session('toad_user')) {
             return redirect('/films');
         }
         return view('login');
@@ -31,20 +31,27 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        $passwordMd5 = md5($request->password);
-
         $response = Http::withToken($this->jwtToken)
-            ->post($this->apiUrl . '/customers/verify', [
+            ->post($this->apiUrl . '/staffs/verify', [
                 'email'    => $request->email,
-                'password' => $passwordMd5,
+                'password' => $request->password,
             ]);
 
         if ($response->successful()) {
-            $data = $response->json();
-            $customerId = $data['customerId'] ?? -1;
+            $resp  = $response->json();
+            $staff = $resp['staff'] ?? $resp;
 
-            if ($customerId > 0) {
-                session(['customerId' => $customerId]);
+            $userData = [
+                'id'    => $staff['staffId'] ?? $staff['id'] ?? $staff['email'],
+                'email' => $staff['email'] ?? null,
+                'name'  => trim(($staff['firstName'] ?? '') . ' ' . ($staff['lastName'] ?? ''))
+                           ?: ($staff['email'] ?? 'Utilisateur'),
+                'token' => $resp['token'] ?? $resp['access_token'] ?? null,
+                'staff' => $staff,
+            ];
+
+            if ($userData['token']) {
+                $request->session()->put('toad_user', $userData);
                 return redirect('/films');
             }
         }
@@ -54,7 +61,7 @@ class LoginController extends Controller
 
     public function logout()
     {
-        session()->forget('customerId');
+        session()->flush();
         return redirect('/login');
     }
 }

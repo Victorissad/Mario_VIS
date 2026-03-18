@@ -36,8 +36,8 @@ return [
     ],
 
     'toad' => [
-        'url' => env('TOAD_API_URL', 'http://127.0.0.1:8180'),
-        'token' => env('TOAD_JWT_TOKEN', ''),
+        'url' => env('TOAD_API_URL', 'http://127.0.0.1') . ':' . env('TOAD_API_PORT', '8180'),
+        'token' => env('TOAD_API_TOKEN', ''),
     ],
 
 ];

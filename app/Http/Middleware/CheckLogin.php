@@ -9,7 +9,7 @@ class CheckLogin
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!session('customerId')) {
+        if (!session('toad_user')) {
             return redirect('/login');
         }
         return $next($request);

@@ -31,13 +31,4 @@ Route::middleware(\App\Http\Middleware\CheckLogin::class)->group(function () {
     Route::delete('/inventories/{id}',   [ToadController::class, 'deleteInventory']);
     Route::get('/inventories/{id}',      [ToadController::class, 'getInventoryDetail']);
 
-    // Magasins
-    Route::get('/stores',     [ToadController::class, 'getStores']);
-    Route::get('/stores/{id}',[ToadController::class, 'getStoreDetail']);
-
-    // Clients
-    Route::get('/customers',           [ToadController::class, 'getCustomers']);
-    Route::get('/customers/{id}/edit', [ToadController::class, 'showEditCustomer']);
-    Route::put('/customers/{id}',      [ToadController::class, 'updateCustomer']);
-    Route::delete('/customers/{id}',   [ToadController::class, 'deleteCustomer']);
 });

@@ -58,17 +58,7 @@
                             <i class="bi bi-box"></i> Inventaire
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->is('stores*') ? 'active' : '' }}" href="/stores">
-                            <i class="bi bi-shop"></i> Magasins
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->is('customers*') ? 'active' : '' }}" href="/customers">
-                            <i class="bi bi-people"></i> Clients
-                        </a>
-                    </li>
-                    <li class="nav-item ms-2">
+<li class="nav-item ms-2">
                         <form method="POST" action="/logout" class="d-inline">
                             @csrf
                             <button type="submit" class="btn btn-outline-light btn-sm">
