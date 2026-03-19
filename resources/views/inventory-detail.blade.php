@@ -131,11 +131,6 @@
                                 <li><strong><i class="bi bi-geo-alt"></i> Adresse :</strong> ID #{{ $store['addressId'] ?? '-' }}</li>
                             </ul>
 
-                            <div class="mt-3">
-                                <a href="/stores/{{ $store['storeId'] }}" class="btn btn-info btn-sm text-white">
-                                    <i class="bi bi-eye"></i> Voir les détails du magasin
-                                </a>
-                            </div>
                         </div>
                     </div>
                 @else

@@ -28,6 +28,7 @@ Route::middleware(\App\Http\Middleware\CheckLogin::class)->group(function () {
     // Inventaires / Stock
     Route::post('/inventories',          [ToadController::class, 'createInventory']);
     Route::get('/inventories',           [ToadController::class, 'getInventories']);
+    Route::put('/inventories/{id}',      [ToadController::class, 'updateInventory']);
     Route::delete('/inventories/{id}',   [ToadController::class, 'deleteInventory']);
     Route::get('/inventories/{id}',      [ToadController::class, 'getInventoryDetail']);
 

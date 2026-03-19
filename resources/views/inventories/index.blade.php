@@ -1,110 +1,82 @@
 {{--
-    Vue: Liste de tous les exemplaires de l'inventaire
+    Vue: Inventaire groupé par film et magasin
     Route: GET /inventories
-
-    Affiche un tableau avec tous les DVD de tous les magasins
 --}}
 
 @extends('layouts.app')
 
 @section('content')
 <div class="container">
-    {{-- En-tête de la page --}}
-    <div class="row mb-4">
+    <div class="row justify-content-center">
         <div class="col-md-12">
-            <h1>Gestion de l'Inventaire</h1>
-            <p class="text-muted">Liste de tous les exemplaires de DVD</p>
-        </div>
-    </div>
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Gestion de l'Inventaire</h5>
+                    <a href="{{ route('inventories.create') }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i> Ajouter des exemplaires
+                    </a>
+                </div>
 
-    {{-- Boutons d'action principaux --}}
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <a href="{{ route('inventories.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Ajouter des exemplaires
-            </a>
-            <a href="{{ route('stores.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-shop"></i> Voir les magasins
-            </a>
-        </div>
-    </div>
+                <div class="card-body">
+                    @if(session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
+                    @if(session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
 
-    {{-- Tableau des exemplaires --}}
-    @if(count($inventories) > 0)
-        <div class="card">
-            <div class="card-body">
-                <p class="mb-3"><strong>Total : {{ count($inventories) }} exemplaires</strong></p>
+                    @if(empty($grouped))
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Aucun exemplaire trouvé dans l'inventaire.
+                        </div>
+                    @else
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Titre du film</th>
+                                        <th>Magasin</th>
+                                        <th>Exemplaires</th>
+                                        <th>Note</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($grouped as $row)
+                                        <tr>
+                                            <td><strong>{{ $row['title'] }}</strong></td>
+                                            <td><i class="bi bi-shop"></i> Magasin #{{ $row['storeId'] }}</td>
+                                            <td>
+                                                <span class="badge bg-primary fs-6">{{ $row['count'] }}</span>
+                                            </td>
+                                            <td>
+                                                @if($row['rating'])
+                                                    <span class="badge bg-info">{{ $row['rating'] }}</span>
+                                                @else
+                                                    <span class="badge bg-secondary">N/A</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{{ route('inventories.create') }}?film_id={{ $row['filmId'] }}&store_id={{ $row['storeId'] }}"
+                                                   class="btn btn-sm btn-outline-primary" title="Ajouter des exemplaires">
+                                                    <i class="bi bi-plus-circle"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
 
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Film</th>
-                                <th>Magasin</th>
-                                <th>Dernière MAJ</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{-- Boucle sur tous les exemplaires --}}
-                            @foreach($inventories as $inventory)
-                                <tr>
-                                    <td>{{ $inventory['inventoryId'] }}</td>
-                                    <td>
-                                        {{-- Affichage du titre du film --}}
-                                        @if(isset($inventory['film']))
-                                            <strong>{{ $inventory['film']['title'] }}</strong>
-                                            @if(isset($inventory['film']['releaseYear']))
-                                                <span class="text-muted">({{ $inventory['film']['releaseYear'] }})</span>
-                                            @endif
-                                        @else
-                                            Film ID: {{ $inventory['filmId'] }}
-                                        @endif
-                                    </td>
-                                    <td>
-                                        {{-- Lien vers le détail du magasin --}}
-                                        <a href="{{ route('stores.show', $inventory['storeId']) }}">
-                                            Magasin #{{ $inventory['storeId'] }}
-                                        </a>
-                                    </td>
-                                    <td>{{ \Carbon\Carbon::parse($inventory['lastUpdate'])->format('d/m/Y H:i') }}</td>
-                                    <td class="text-end">
-                                        {{-- Boutons d'action --}}
-                                        <a href="{{ route('inventories.show', $inventory['inventoryId']) }}"
-                                           class="btn btn-sm btn-info"
-                                           title="Voir">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a href="{{ route('inventories.edit', $inventory['inventoryId']) }}"
-                                           class="btn btn-sm btn-warning"
-                                           title="Modifier">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        {{-- Formulaire de suppression avec confirmation --}}
-                                        <form action="{{ route('inventories.destroy', $inventory['inventoryId']) }}"
-                                              method="POST"
-                                              style="display:inline;"
-                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet exemplaire ?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                        <p class="text-muted mt-2">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>{{ count($grouped) }}</strong> ligne(s) &mdash;
+                            <strong>{{ $totalItems }}</strong> exemplaire(s) au total
+                        </p>
+                    @endif
                 </div>
             </div>
         </div>
-    @else
-        {{-- Message si aucun exemplaire --}}
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Aucun exemplaire trouvé dans l'inventaire.
-        </div>
-    @endif
+    </div>
 </div>
 @endsection

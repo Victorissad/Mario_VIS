@@ -43,12 +43,33 @@ class InventoryController extends Controller
      */
     public function index()
     {
-        // Appeler l'API pour récupérer tous les exemplaires
-        $inventories = $this->inventoryService->getAllInventories();
+        $inventories = $this->inventoryService->getAllInventories() ?? [];
 
-        // Afficher la vue avec les données
+        // Grouper par film + magasin et compter les exemplaires
+        $grouped = [];
+        foreach ($inventories as $inventory) {
+            $filmId  = $inventory['filmId'];
+            $storeId = $inventory['storeId'];
+            $key     = $filmId . '_' . $storeId;
+
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'filmId'  => $filmId,
+                    'storeId' => $storeId,
+                    'title'   => $inventory['film']['title'] ?? 'Film #' . $filmId,
+                    'rating'  => $inventory['film']['rating'] ?? null,
+                    'count'   => 0,
+                ];
+            }
+            $grouped[$key]['count']++;
+        }
+
+        // Trier par titre
+        usort($grouped, fn($a, $b) => strcmp($a['title'], $b['title']));
+
         return view('inventories.index', [
-            'inventories' => $inventories ?? []
+            'grouped'    => $grouped,
+            'totalItems' => count($inventories),
         ]);
     }
 

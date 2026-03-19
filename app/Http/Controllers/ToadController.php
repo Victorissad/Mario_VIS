@@ -160,15 +160,53 @@ class ToadController extends Controller
     {
         $response = $this->apiGet('/inventories');
 
-        if ($response->successful()) {
-            return view('inventories', ['inventories' => $response->json()]);
+        if (!$response->successful()) {
+            return response()->json([
+                'error'  => 'Impossible de récupérer les inventaires',
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ], 500);
         }
 
-        return response()->json([
-            'error'  => 'Impossible de récupérer les inventaires',
-            'status' => $response->status(),
-            'body'   => $response->body(),
-        ], 500);
+        $inventories = $response->json();
+
+        // Récupérer tous les films pour avoir les titres
+        $filmsResponse = $this->apiGet('/films');
+        $filmMap = [];
+        if ($filmsResponse->successful()) {
+            foreach ($filmsResponse->json() as $film) {
+                $filmMap[$film['filmId']] = $film;
+            }
+        }
+
+        // Grouper par film + magasin et compter
+        $grouped = [];
+        foreach ($inventories as $inventory) {
+            $filmId  = $inventory['filmId'];
+            $storeId = $inventory['storeId'];
+            $key     = $filmId . '_' . $storeId;
+
+            if (!isset($grouped[$key])) {
+                $film = $filmMap[$filmId] ?? null;
+                $grouped[$key] = [
+                    'filmId'   => $filmId,
+                    'storeId'  => $storeId,
+                    'title'    => $film['title'] ?? 'Film #' . $filmId,
+                    'rating'   => $film['rating'] ?? null,
+                    'count'    => 0,
+                    'copies'   => [], // liste des inventoryId individuels
+                ];
+            }
+            $grouped[$key]['count']++;
+            $grouped[$key]['copies'][] = $inventory['inventoryId'];
+        }
+
+        usort($grouped, fn($a, $b) => strcmp($a['title'], $b['title']));
+
+        return view('inventories', [
+            'grouped'    => array_values($grouped),
+            'totalItems' => count($inventories),
+        ]);
     }
 
     public function getInventoryDetail($id)
@@ -225,6 +263,30 @@ class ToadController extends Controller
         }
 
         return back()->withErrors(['api' => 'Erreur lors de l\'ajout. (' . $response->status() . ')']);
+    }
+
+    public function updateInventory(Request $request, $id)
+    {
+        $request->validate(['storeId' => 'required|integer|min:1']);
+
+        // Récupérer le filmId existant pour le conserver
+        $current = $this->apiGet('/inventories/' . $id);
+        if (!$current->successful()) {
+            return back()->withErrors(['api' => 'Exemplaire introuvable.']);
+        }
+
+        $filmId = $current->json()['filmId'];
+
+        $response = $this->apiPut('/inventories/' . $id, [
+            'filmId'  => $filmId,
+            'storeId' => (int) $request->storeId,
+        ]);
+
+        if ($response->successful()) {
+            return redirect('/inventories')->with('success', 'Exemplaire #' . $id . ' déplacé vers le magasin #' . $request->storeId . '.');
+        }
+
+        return back()->withErrors(['api' => 'Erreur lors de la modification. (' . $response->status() . ')']);
     }
 
     public function deleteInventory($id)

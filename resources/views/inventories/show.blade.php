@@ -43,9 +43,7 @@
                             <tr>
                                 <th>Magasin</th>
                                 <td>
-                                    <a href="{{ route('stores.show', $inventory['storeId']) }}">
-                                        Magasin #{{ $inventory['storeId'] }}
-                                    </a>
+                                    Magasin #{{ $inventory['storeId'] }}
                                 </td>
                             </tr>
                             <tr>

@@ -8,8 +8,8 @@
         <h1 class="display-4">
             <i class="bi bi-box text-success"></i> Gestion du stock
         </h1>
-        @if(isset($inventories) && count($inventories) > 0)
-            <p class="text-muted">Total : <strong>{{ count($inventories) }}</strong> exemplaires de DVD en stock</p>
+        @if(isset($totalItems))
+            <p class="text-muted">Total : <strong>{{ $totalItems }}</strong> exemplaires de DVD en stock</p>
         @endif
     </div>
     <div class="col-auto">
@@ -60,54 +60,93 @@
     </div>
 </div>
 
-@if(isset($inventories) && count($inventories) > 0)
+@if(!empty($grouped))
     <div class="card shadow">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover table-striped mb-0">
                     <thead class="table-dark">
                         <tr>
-                            <th style="width: 100px;">ID Inventaire</th>
-                            <th style="width: 100px;">ID Film</th>
-                            <th style="width: 150px;">ID Magasin</th>
-                            <th>Dernière mise à jour</th>
-                            <th style="width: 140px;">Actions</th>
+                            <th>Titre du film</th>
+                            <th>Magasin</th>
+                            <th>Exemplaires</th>
+                            <th>Note</th>
+                            <th style="width: 120px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($inventories as $inventory)
+                        @foreach($grouped as $i => $row)
+                            {{-- Ligne groupée --}}
                             <tr>
-                                <td>
-                                    <span class="badge bg-primary">#{{ $inventory['inventoryId'] ?? '-' }}</span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-info">Film #{{ $inventory['filmId'] ?? '-' }}</span>
-                                </td>
+                                <td><strong>{{ $row['title'] }}</strong></td>
                                 <td>
                                     <span class="badge bg-success">
-                                        <i class="bi bi-shop"></i> Magasin #{{ $inventory['storeId'] ?? '-' }}
+                                        <i class="bi bi-shop"></i> Magasin #{{ $row['storeId'] }}
                                     </span>
                                 </td>
                                 <td>
-                                    <small class="text-muted">
-                                        <i class="bi bi-clock-history"></i>
-                                        {{ $inventory['lastUpdate'] ?? '-' }}
-                                    </small>
+                                    <span class="badge bg-primary fs-6">{{ $row['count'] }}</span>
                                 </td>
                                 <td>
-                                    <div class="d-flex gap-1">
-                                        <a href="/inventories/{{ $inventory['inventoryId'] }}" class="btn btn-sm btn-primary">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <form method="POST" action="/inventories/{{ $inventory['inventoryId'] }}"
-                                              onsubmit="return confirm('Supprimer cet exemplaire du stock ?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
+                                    @if($row['rating'])
+                                        <span class="badge bg-info">{{ $row['rating'] }}</span>
+                                    @else
+                                        <span class="badge bg-secondary">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    {{-- Bouton pour déplier les exemplaires individuels --}}
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#copies-{{ $i }}"
+                                            title="Voir les exemplaires">
+                                        <i class="bi bi-list-ul"></i> Gérer
+                                    </button>
+                                </td>
+                            </tr>
+
+                            {{-- Ligne dépliable : exemplaires individuels --}}
+                            <tr class="collapse" id="copies-{{ $i }}">
+                                <td colspan="5" class="bg-light p-0">
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                            <tr class="table-secondary">
+                                                <th class="ps-4">ID Exemplaire</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($row['copies'] as $inventoryId)
+                                                <tr>
+                                                    <td class="ps-4">
+                                                        <span class="badge bg-secondary">#{{ $inventoryId }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="/inventories/{{ $inventoryId }}"
+                                                           class="btn btn-sm btn-primary" title="Voir">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                        <button class="btn btn-sm btn-warning" title="Modifier le magasin"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#editModal"
+                                                                data-id="{{ $inventoryId }}"
+                                                                data-store="{{ $row['storeId'] }}">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <form method="POST" action="/inventories/{{ $inventoryId }}"
+                                                              style="display:inline;"
+                                                              onsubmit="return confirm('Supprimer cet exemplaire du stock ?')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 </td>
                             </tr>
                         @endforeach
@@ -116,9 +155,50 @@
             </div>
         </div>
     </div>
+
+    <p class="text-muted mt-3">
+        <i class="bi bi-info-circle"></i>
+        <strong>{{ count($grouped) }}</strong> titre(s) &mdash;
+        <strong>{{ $totalItems }}</strong> exemplaire(s) au total
+    </p>
 @else
     <div class="alert alert-warning" role="alert">
         <i class="bi bi-exclamation-triangle"></i> Aucun inventaire trouvé.
     </div>
 @endif
+<!-- Modal modifier magasin -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil"></i> Modifier le magasin</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <label class="form-label fw-bold">Nouveau magasin <span class="text-danger">*</span></label>
+                    <input type="number" name="storeId" id="editStoreId" class="form-control" min="1" required>
+                    <small class="text-muted">Exemplaire #<span id="editInventoryId"></span></small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-warning">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('editModal').addEventListener('show.bs.modal', function (e) {
+    const btn = e.relatedTarget;
+    const id  = btn.getAttribute('data-id');
+    const store = btn.getAttribute('data-store');
+    document.getElementById('editInventoryId').textContent = id;
+    document.getElementById('editStoreId').value = store;
+    document.getElementById('editForm').action = '/inventories/' + id;
+});
+</script>
 @endsection
