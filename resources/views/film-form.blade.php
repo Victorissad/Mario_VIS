@@ -68,17 +68,8 @@
                     @error('rentalDuration') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
-                <div class="col-md-3 mb-3">
-                    <label class="form-label fw-bold">Tarif location (€)</label>
-                    <input type="number" step="0.01" name="rentalRate" class="form-control"
-                           value="{{ old('rentalRate', $film['rentalRate'] ?? '4.99') }}" min="0">
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <label class="form-label fw-bold">Coût remplacement (€)</label>
-                    <input type="number" step="0.01" name="replacementCost" class="form-control"
-                           value="{{ old('replacementCost', $film['replacementCost'] ?? '19.99') }}" min="0">
-                </div>
+                <input type="hidden" name="rentalRate" value="{{ old('rentalRate', $film['rentalRate'] ?? '4.99') }}">
+                <input type="hidden" name="replacementCost" value="{{ old('replacementCost', $film['replacementCost'] ?? '19.99') }}">
             </div>
 
             <div class="row">
