@@ -49,6 +49,9 @@
                             <button type="submit" class="btn btn-primary w-100">
                                 <i class="bi bi-box-arrow-in-right"></i> Se connecter
                             </button>
+                            <div class="text-center mt-3">
+                                <a href="/register" class="text-muted small">Pas encore de compte ? S'inscrire</a>
+                            </div>
                         </form>
                     </div>
                 </div>

@@ -219,6 +219,6 @@ class ToadFilmService
         $userData = session('toad_user');
         Log::info('Récupération token utilisateur', ['userData' => $userData]);
 
-        return $userData['token'] ?? null;
+        return $userData['token'] ?? config('services.toad.token');
     }
 }

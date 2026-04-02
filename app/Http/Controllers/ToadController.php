@@ -46,17 +46,38 @@ class ToadController extends Controller
 
     public function getFilms()
     {
-        $response = $this->apiGet('/films');
+        return view('films', ['allowedLimits' => [10, 20, 50]]);
+    }
 
-        if ($response->successful()) {
-            return view('films', ['films' => $response->json()]);
+    public function getFilmsData(Request $request)
+    {
+        $allowedLimits = [10, 20, 50];
+        $limit = (int) $request->input('limit', 10);
+        if (!in_array($limit, $allowedLimits)) {
+            $limit = 10;
         }
 
-        return response()->json([
-            'error'  => 'Impossible de récupérer les films',
-            'status' => $response->status(),
-            'body'   => $response->body(),
-        ], 500);
+        $page   = max(1, (int) $request->input('page', 1));
+        $offset = ($page - 1) * $limit;
+
+        $countResponse = $this->apiGet('/films/count');
+        $totalFilms    = $countResponse->successful() ? (int) $countResponse->body() : 0;
+        $totalPages    = $totalFilms > 0 ? (int) ceil($totalFilms / $limit) : 1;
+
+        $response = $this->apiGet('/films?limit=' . $limit . '&offset=' . $offset);
+
+        if ($response->successful()) {
+            $films = array_slice($response->json(), 0, $limit);
+            return response()->json([
+                'films'       => $films,
+                'currentPage' => $page,
+                'limit'       => $limit,
+                'totalFilms'  => $totalFilms,
+                'totalPages'  => $totalPages,
+            ]);
+        }
+
+        return response()->json(['films' => [], 'currentPage' => 1, 'limit' => $limit, 'totalFilms' => 0, 'totalPages' => 1]);
     }
 
     public function showCreateFilm()
@@ -87,6 +108,11 @@ class ToadController extends Controller
         $response = $this->apiPost('/films', $data);
 
         if ($response->successful()) {
+            $film = $response->json();
+            $filmId = $film['filmId'] ?? null;
+            if ($filmId) {
+                return redirect('/films/' . $filmId)->with('success', 'Film ajouté avec succès.');
+            }
             return redirect('/films')->with('success', 'Film ajouté avec succès.');
         }
 

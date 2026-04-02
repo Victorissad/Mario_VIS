@@ -20,8 +20,8 @@ class ToadAuthService
     {
         $url = $this->baseUrl . '/staffs/verify';
         $body = [
-            'email' => $email,
-            'password' => $password
+            'email'    => $email,
+            'password' => md5($password),
         ];
 
         try {

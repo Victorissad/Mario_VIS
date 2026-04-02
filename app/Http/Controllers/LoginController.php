@@ -2,24 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Auth\ToadUser;
+use App\Services\ToadAuthService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
-    private string $apiUrl;
-    private string $jwtToken;
+    protected $redirectTo = '/films';
+    protected $toadAuth;
 
-    public function __construct()
+    public function __construct(ToadAuthService $toadAuth)
     {
-        $this->apiUrl = config('services.toad.url');
-        $this->jwtToken = config('services.toad.token');
+        $this->toadAuth = $toadAuth;
     }
 
     public function showLogin()
     {
-        if (session('toad_user')) {
-            return redirect('/films');
+        if (Auth::check()) {
+            return redirect($this->redirectTo);
         }
         return view('login');
     }
@@ -31,36 +33,39 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        $response = Http::withToken($this->jwtToken)
-            ->post($this->apiUrl . '/staffs/verify', [
-                'email'    => $request->email,
-                'password' => $request->password,
+        $resp = $this->toadAuth->verify(
+            $request->input('email'),
+            $request->input('password')
+        );
+
+        if (!$resp) {
+            throw ValidationException::withMessages([
+                'login' => ['Email ou mot de passe incorrect.'],
             ]);
-
-        if ($response->successful()) {
-            $resp  = $response->json();
-            $staff = $resp['staff'] ?? $resp;
-
-            $userData = [
-                'id'    => $staff['staffId'] ?? $staff['id'] ?? $staff['email'],
-                'email' => $staff['email'] ?? null,
-                'name'  => trim(($staff['firstName'] ?? '') . ' ' . ($staff['lastName'] ?? ''))
-                           ?: ($staff['email'] ?? 'Utilisateur'),
-                'token' => $resp['token'] ?? $resp['access_token'] ?? null,
-                'staff' => $staff,
-            ];
-
-            if ($userData['token']) {
-                $request->session()->put('toad_user', $userData);
-                return redirect('/films');
-            }
         }
 
-        return back()->withErrors(['login' => 'Email ou mot de passe incorrect.']);
+        $staff = $resp['staff'] ?? $resp;
+
+        $userData = [
+            'id'    => $staff['staffId'] ?? $staff['id'] ?? $staff['email'],
+            'email' => $staff['email'] ?? null,
+            'name'  => trim(($staff['firstName'] ?? '') . ' ' . ($staff['lastName'] ?? ''))
+                       ?: ($staff['email'] ?? 'Utilisateur'),
+            'token' => $resp['token'] ?? $resp['access_token'] ?? null,
+            'staff' => $staff,
+        ];
+
+        $request->session()->put('toad_user', $userData);
+
+        $user = new ToadUser($userData);
+        Auth::login($user, false);
+
+        return redirect($this->redirectTo);
     }
 
     public function logout()
     {
+        Auth::logout();
         session()->flush();
         return redirect('/login');
     }
